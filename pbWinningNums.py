@@ -25,7 +25,7 @@ class WinningNums:
         :return:
         """
         fl_lottery = requests.get(url)
-        html = BeautifulSoup(fl_lottery.text, 'lxml')
+        html = BeautifulSoup(fl_lottery.text, 'html.parser')
         return html
 
     #create Method for parsing the first number of each winning number (this is needed because the raw html output combines the dates and the first number into one string inside a list):

@@ -24,7 +24,7 @@ class pbNumRanks:
         :return:
         """
         fl_lottery = requests.get(url)
-        html = BeautifulSoup(fl_lottery.text, 'lxml')
+        html = BeautifulSoup(fl_lottery.text, 'html.parser')
         return html
 
   #create Method for parsing the PB number from the provided url:

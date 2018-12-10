@@ -5,139 +5,127 @@ Author: D. Plyler
 
 SUMMARY: This module scrapes the www.flalottery.com website for all winning powerball lottery number sets from 7 Jan 2009 to 24 October 2018.  It captures the base html, then parses out each of the lottery numbers from their surrounding data (dates, descriptions, etc.), then sorts them by their frequency.  Finally, the results are saved to a text file for reference.  As this was a project purely for learning about web scraping and honing my python skills, I referenced www.realpython.com to get started.
 """
-
 import requests   #using 'requests' for handling HTTP
 from bs4 import BeautifulSoup   #bs4 for parsing the html
-import pandas as pd   #pandas used with Series (pd.Series) to rank all results
+from pandas import DataFrame   #for creating a dataframe (df)
+from pandas import set_option   #pandas used with Series (pd.Series) to rank all results
+from pandas import Series #pandas used with Series (pd.Series) to rank all results
 import datetime   #used for formatting datetime
+import re  #use regular expressions to help parse data
+import tkinter as tk #for 'file save as' window
+from tkinter import filedialog #for 'file save as' window
 
 #create global datetime variable:
 now = datetime.datetime.now()
 
 #create WinningNums Class, containing the base URL:
-class WinningNums:
-    BASE_URL = 'http://www.flalottery.com/site/winningNumberSearch?searchTypeIn=range&gameNameIn=POWERBALL&singleDateIn=&fromDateIn=01%2F07%2F2009&toDateIn=10%2F24%2F2018&n1In=&n2In=&n3In=&n4In=&n5In=&n6In=&pbIn=&mbIn=&lbIn=&pnIn=&cbIn=&submitForm=Submit'
+url = 'http://www.flalottery.com/site/winningNumberSearch?searchTypeIn=range&gameNameIn=POWERBALL&singleDateIn=&fromDateIn=01%2F07%2F2009&toDateIn=10%2F24%2F2018&n1In=&n2In=&n3In=&n4In=&n5In=&n6In=&pbIn=&mbIn=&lbIn=&pnIn=&cbIn=&submitForm=Submit'
        
-    #create Method for getting the html from the provided url:
-    def get_html(url):
-        """
-        Get the FL Lottery html
-        :return:
-        """
-        fl_lottery = requests.get(url)
-        html = BeautifulSoup(fl_lottery.text, 'html.parser')
-        return html
+fl_lottery = requests.get(url) #store raw url data as fl_lottery
+html = BeautifulSoup(fl_lottery.text, 'html.parser') #parse url data
+dataSet = [] #create empty container for our data
+for raw_data in html.findAll('table', attrs={"class": "style1 games"}):
+    raw_data = raw_data.text
+    dataSet.append(raw_data) #dataSet is list of all numbers
 
-    #create Method for parsing the first number of each winning number (this is needed because the raw html output combines the dates and the first number into one string inside a list):
-    def first_num():       
-        html = WinningNums.get_html(WinningNums.BASE_URL)
-        first_num = []        
-        #if the html is valid, find the numbers separated by '-', then by '/', then by spaces:        
-        if html:
-            for tbody in html.find_all('tbody'):
-                div = tbody.text.split('-')
-                div = ' '.join(div)
-                div = div.split('/')               
-                div = ' '.join(div)
-                div = div.split(' ')                
-                #capture only the last 2 numbers in strings of certain lengths:
-                for x in div:
-                    if len(x) in range(5, 7):
-                        first_num.append(x[4:6])
-                        #strip out leading zeroes to ensure only 69 results:
-                        first_num = [s.lstrip("0") for s in first_num]                                      
-                return (first_num)
+dataString = ''.join(dataSet) #convert list to strings
 
-    #create Method for parsing the middle numbers from the provided url:
-    def mid_nums():        
-        html = WinningNums.get_html(WinningNums.BASE_URL)
-        mid_nums = []        
-        if html:
-            for tbody in html.find_all('tbody'):
-                div = tbody.text.split('-')
-                div = ' '.join(div)
-                div = div.split()                
-                #ensure we only capture numbers and exclude any digits that are sometimes captured in this set of numbers
-                for x in div:
-                    if x.isdigit():
-                        mid_nums.append(x)
-                        mid_nums = [s.lstrip("0") for s in mid_nums]                
-                return mid_nums 
+#define patterns for the numbers and dates
+PBnums = re.compile(r'(\d{1,6}\s-\s\d{1,2}\s-\s\d{1,2}\s-\s\d{1,2}\s-\s\d{1,2}\sPB\s\d{1,2})')  #define winning number pattern
+PBdates = re.compile(r'(\d{1,2}.\d{1,2}.\d{4})')  #define winning date pattern
 
-    #create Method for parsing the last number from the provided url                (again, this is needed because the raw html output combines the last number with the PB number and remaining text):
-    def last_num():
-        html = WinningNums.get_html(WinningNums.BASE_URL)
-        last_num = []        
-        if html:
-            for tbody in html.find_all('tbody'):
-                div = tbody.text.split('-')
-                for x in div:
-                    if 'PB' in x:
-                        x = x[1:4]
-                        x = x.split()
-                        x = ' '.join(x)
-                        last_num.append(x)
-                        last_num = [s.lstrip("0") for s in last_num]                
-                return (last_num)            
+dateMatch = PBdates.finditer(dataString) #find all winning dates in PBdates
+numMatch = PBnums.finditer(dataString) #find all winning numbers in PBnums
+
+nums = []
+for match in numMatch: #print all winning number sets
+    numbers = match.group(1)[4:]
+    nums.append(numbers)
+
+dates = []
+for match in dateMatch: #print all winning date sets
+    date = match.group(1)
+    dates.append(date)
+
+#create winning date, number pairs:
+data_pairs = {'Dates' : dates, 'Numbers' : nums} #first, create a dictionary
+df = DataFrame(data_pairs, columns = ['Dates', 'Numbers'])
+
+class WinningNums(): #create overall class for winning numbers
+    #create method to parse out first five PB numbers into one list:
+    def firstFive():
+        firstFive = re.compile(r'(\d{1,2})\s-\s(\d{1,2})\s-\s(\d{1,2})\s-\s(\d{1,2})\s-\s(\d{1,2})')
+        div = '  '.join(nums)
+        numMatch = firstFive.finditer(div) #find all winning numbers in PBnums
+        first_nums = []
+        for match in numMatch: #print all winning number sets
+            first = match.group(1)
+            sec = match.group(2)
+            third = match.group(3)
+            fourth = match.group(4)
+            fifth = match.group(5)
+            first_nums.append(first)
+            first_nums.append(sec)
+            first_nums.append(third)
+            first_nums.append(fourth)
+            first_nums.append(fifth)            
+        return (first_nums)
     
-    #create Method for parsing the PB number from the provided url:
-    def pb_num():
-        html = WinningNums.get_html(WinningNums.BASE_URL)
-        pb_num = []        
-        if html:
-            for tbody in html.find_all('tbody'):
-                div = tbody.text.split('-')
-                for x in div:
-                    if 'PB' in x:
-                        x= x[7:9]
-                        x = x.split()
-                        x = ''.join(x)
-                        pb_num.append(x)
-                        pb_num = [s.lstrip("0") for s in pb_num]                
-                return (pb_num)            
+    #create method for parsing the PB number from the provided url:
+    def pb_nums():
+        pbNums = re.compile(r'(PB\s\d{1,2})') 
+        div = '  '.join(nums)
+        numMatch = pbNums.finditer(div) #find all winning numbers in PBnums
+        pb_nums = []
+        for match in numMatch: #print all winning number sets
+            numbers = match.group(1)[2:]
+            pb_nums.append(numbers)
+            pb_nums = [s.lstrip(" ") for s in pb_nums]
+        return (pb_nums)
+    
+    def winners(): #create method for returning all winning numbers
+       winners = WinningNums.firstFive() + WinningNums.pb_nums()
+       return winners
+   
+    def winners_sort(): #create method for sorting unique winning numbers
+       winners_sort = WinningNums.firstFive() + WinningNums.pb_nums()        
+       return Series(winners_sort).value_counts()
             
-    #create Method for combining all the numbers into one list, then sort them by frequency of occurrence using panda Series:
-    def winners():
-        winners = WinningNums.first_num() + WinningNums.mid_nums() + WinningNums.last_num() + WinningNums.pb_num()
-        return winners
-        #print(pd.Series(winners).value_counts()
-        
-    def winners_sort():
-        winners_sort = WinningNums.first_num() + WinningNums.mid_nums() + WinningNums.last_num() + WinningNums.pb_num()        
-        return pd.Series(winners_sort).value_counts()
-    
-#execute these actions ONLY when this module is run (NOT when called by other modules):
+           
+
 if __name__ == "__main__":
-    
     #ensure all pandas results are captured: 
-    pd.set_option('display.max_rows', 100)
-    print("This is the list of winning numbers by rank: ")
-    print()
-    print(WinningNums.winners_sort())
-    print()
-    print("Total unique numbers captured: ", len(WinningNums.winners_sort()))
-    #write results to file:
-    with open('winning.txt', 'w') as f:
-        f.write(str(WinningNums.winners_sort()))
-        f.write(str(now))
-    print()
-    print("Program finished at", (now.strftime("%Y-%m-%d %H:%M:%S")))
+    set_option('display.max_rows', 100)
+    print('-' *10, ' BEGIN ', '-'*15,'\n')
+    print("These are the first five winning numbers: ", '\n')
+    print(WinningNums.firstFive(), '\n')        
+    print("These are the PB numbers: ", '\n')
+    print(WinningNums.pb_nums(), '\n')
+    print("This is the list of all unique winning numbers sorted by frequency: ", '\n')
+    print(WinningNums.winners_sort(), '\n')
+    print("Total unique numbers captured (should ALWAYS be 69!): ", len(WinningNums.winners_sort()))
+    print("Total number of PBs is: ", len(WinningNums.pb_nums()))
+    print("Total number of first five winning numbers is: ", len(WinningNums.firstFive()))
+    print("Total number of all winning numbers (including duplicates) is: ", len(WinningNums.winners()),'\n')
+    print("-"*10, "PROGRAM FINISHED AT", (now.strftime("%Y-%m-%d %H:%M:%S")))
+    #write pandas data to csv file using tkinter
+    root= tk.Tk()
+    canvas1 = tk.Canvas(root, width = 200, height = 100, bg = 'lightsteelblue2', relief = 'raised')
+    canvas1.pack()
+    def exportCSV ():
+        global df
+        export_file_path = filedialog.asksaveasfilename(defaultextension='.csv')
+        df.to_csv (export_file_path, index = None, header=True)
+    saveAsButton_CSV = tk.Button(text='Export to CSV file', command=exportCSV, bg='green', fg='white', font=('helvetica', 12, 'bold'))
+    canvas1.create_window(100, 50, window=saveAsButton_CSV)
+    root.mainloop()
+
+
+
 
 
 ###             Debugging              ###      
      
-#print("These are the first numbers: ", WinningNums.first_num())
-#print(len(WinningNums.first_num()))
-#print()
-#print("These are the middle numbers: ", WinningNums.mid_nums())
-#print(len(WinningNums.mid_nums()))
-#print()
-#print("These are the last numbers: ", WinningNums.last_num())
-#print(len(WinningNums.last_num()))
-#print()
-#print("These are the powerball numbers: ", WinningNums.pb_num())
-#print(len(WinningNums.pb_num()))
-#print()
 
 ###             Debugging              ###   
     

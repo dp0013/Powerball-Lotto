@@ -7,7 +7,6 @@ SUMMARY: This project was conducted to strengthen my current Python skillset whi
 """
 #imports and executes the module containing the class and supporting functions:
 from pbWinningNums import WinningNums
-#from pbWinningNums import WinningNums
 import pandas as pd
 import datetime
 

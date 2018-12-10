@@ -3,7 +3,7 @@
 Created on Tue Oct 16 02:17:44 2018
 Author: D. Plyler 
 
-SUMMARY: This module scrapes the www.flalottery.com website for all winning powerball lottery number sets from 7 Jan 2009 to 24 October 2018.  It captures the base html, then parses out each of the lottery numbers from their surrounding data (dates, descriptions, etc.), then sorts them by their frequency.  Finally, the results are saved to a text file for reference.  As this was a project purely for learning about web scraping and honing my python skills, I referenced www.realpython.com to get started.
+SUMMARY: This module scrapes the www.flalottery.com website for all winning powerball lottery number sets from 7 Jan 2009 to 24 October 2018.  It captures the base html, then parses out each of the lottery numbers from their surrounding data (dates, descriptions, etc.), then sorts them by their frequency.  Finally, the results are exported to a csv file for reference, if desired, through a tkinter window.  As this was a project purely for learning about web scraping and honing my python skills, I referenced www.realpython.com to get started.
 """
 import requests   #using 'requests' for handling HTTP
 from bs4 import BeautifulSoup   #bs4 for parsing the html

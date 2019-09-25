@@ -1,5 +1,5 @@
 # Powerball-Lotto
-repository for Python files related to Powerball lottery project
+Web-scraping, GitHub, Python, and Pandas familiarization project
 
 DISCLAIMER:  This was not intended for use in hacking the Powerball lottery in any way, shape, or form. 
 

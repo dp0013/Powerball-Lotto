@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Nov  6 19:42:49 2018 
-Author: D. Plyler
+Author: dp
 
 SUMMARY: This project was conducted to strengthen my current Python skillset while building web scraping familiarity and is not designed to predict any winning lottery combinations.  Rather, it is designed to collect and observe data, looking for any trends out of mere curiosity.  This specific module calls on 'pbWinningNums' to determine the winning powerball lottery numbers from 2009 to 2018 in order of their frequency.  It then prints out the results, the total number of unique winning numbers captured (this should always be 69 as there are only 69 numbers used in the Powerball lottery) and the date/time the program was executed.   
 """

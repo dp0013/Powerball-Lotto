@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Nov  7 17:19:59 2018 
-Author: D. Plyler 
+Author: dp
 
 SUMMARY: This module imports the results of the 'pbWinningNums' and 'pbNumRanks' modules and finds their intersection.  This identifies and ranks the most frequently drawn powerball numbers ranked among the most frequently drawn winning numbers in general.  Although the first 4 of the 39 numbers are the same as the general winning number set, the rankings change after that, which is helpful to determine the most likely powerball numbers to be drawn in order of their frequency among the most frequently drawn winning numbers over the past ten years.  The results are output to a text file for reference via a tkinter interface.
 """

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Oct 16 02:17:44 2018
-Author: D. Plyler 
+Author: dp
 
 SUMMARY: This module scrapes the www.flalottery.com website for just the winning Powerball numbers from 7 Jan 2009 to 24 October 2018.  This is done because only the order of the Powerball number matters in this particular lottery.  It imports pbNumRanks.py, which captures the base html, then parses out each of the winning PB numbers from their surrounding data (dates, descriptions, and other numbers), then sorts them by their frequency.  If this moduel is called explicitly, it will print out all winning PB numbers, their count, the unique numbers with their respective frequencies, and their count (which should always equal 69).  Finally, the results are saved to a text file for reference and the last console output diplays the time the program completed execution of all explicit commands.
 """
